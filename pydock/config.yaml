@@ -1,0 +1,24 @@
+# Input / Output
+input_dirs:
+  - "examples_pdb"
+
+output_dir: "pydock_output"
+batch: "batch"
+chunks: 1
+singularity_image: "/gpfs/projects/hpcsharing/space/376000/pydock/singularity_container/pydock3_cythonize_20260622.sif"
+
+pydock_modules:
+  - bindEy
+
+# Files to keep
+keep_file_patterns:
+  - "*.ene"
+
+# Execution
+copy_pdbs_to_tmpdir: true
+suppress_stdout: true
+suppress_stderr: true
+
+# Chain mapping (optional)
+chain_mapping_json: ""
+chain_mapping_key_mode: "exact"

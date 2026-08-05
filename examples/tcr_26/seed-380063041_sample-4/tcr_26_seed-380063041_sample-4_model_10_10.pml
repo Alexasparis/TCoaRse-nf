@@ -1,0 +1,71 @@
+# Chn1 Chn2  PAE Dist  Type   ipSAE    ipSAE_d0chn ipSAE_d0dom  ipTM_af  ipTM_d0chn     pDockQ     pDockQ2    LIS      n0res  n0chn  n0dom   d0res   d0chn   d0dom  nres1   nres2   dist1   dist2  Model
+# A    B     10   10   asym  0.716071    0.916668    0.901391    0.910    0.916668      0.5499     0.8146     0.5962      99    465    374    3.63    7.70    7.01    275      99      56      36   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_A_B, color gray80, all; color magenta, chain  A and resi 26-300; color marine, chain  B and resi 1-99
+
+# B    A     10   10   asym  0.843101    0.889332    0.873168    0.910    0.707553      0.5499     0.7923     0.6222     283    465    383    6.19    7.70    7.09     99     284      36      56   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# A    B     10   10   max   0.843101    0.916668    0.901391    0.910    0.916668      0.5499     0.8146     0.6092     283    465    374    6.19    7.70    7.01    284      99      56      36   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_B_A, color gray80, all; color marine, chain  B and resi 1-99; color magenta, chain  A and resi 21-304
+
+# A    C     10   10   asym  0.126534    0.863390    0.818996    0.860    0.863390      0.2698     0.4831     0.5805       9    375    256    1.00    7.02    5.92    247       9      60       9   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_A_C, color gray80, all; color magenta, chain  A and resi 26-39+43-216+223-242+253-274+281-297; color lime, chain  C and resi 1-9
+
+# C    A     10   10   asym  0.490453    0.583980    0.498442    0.860    0.430271      0.2698     0.3089     0.3686     239    375    248    5.73    7.02    5.83      9     239       9      59   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# A    C     10   10   max   0.490453    0.863390    0.818996    0.860    0.863390      0.2698     0.4831     0.4745     239    375    256    5.73    7.02    5.92    247       9      60       9   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_C_A, color gray80, all; color lime, chain  C and resi 1-9; color magenta, chain  A and resi 23-212+226-241+253-270+282-296
+
+# A    D     10   10   asym  0.000000    0.000000    0.000000    0.270    0.144882      0.0394     0.0117     0.0000       0    642      0    1.00    8.81    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_A_D, color gray80, all; color magenta, chain  A and resi None; color orange, chain  D and resi None
+
+# D    A     10   10   asym  0.000000    0.000000    0.000000    0.270    0.161496      0.0394     0.0137     0.0000       0    642      0    1.00    8.81    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# A    D     10   10   max   0.000000    0.000000    0.000000    0.270    0.161496      0.0394     0.0137     0.0000       0    642      0    1.00    8.81    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_D_A, color gray80, all; color orange, chain  D and resi None; color magenta, chain  A and resi None
+
+# A    E     10   10   asym  0.000000    0.000000    0.000000    0.280    0.155700      0.0337     0.0125     0.0000       0    678      0    1.00    9.01    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_A_E, color gray80, all; color magenta, chain  A and resi None; color yellow, chain  E and resi None
+
+# E    A     10   10   asym  0.000000    0.000000    0.000000    0.280    0.168798      0.0337     0.0155     0.0000       0    678      0    1.00    9.01    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# A    E     10   10   max   0.000000    0.000000    0.000000    0.280    0.168798      0.0337     0.0155     0.0000       0    678      0    1.00    9.01    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_E_A, color gray80, all; color yellow, chain  E and resi None; color magenta, chain  A and resi None
+
+# B    C     10   10   asym  0.086067    0.559830    0.546864    0.630    0.559830      0.0000     0.0000     0.5293       9    108    103    1.00    3.82    3.72     94       9       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_B_C, color gray80, all; color marine, chain  B and resi 2-74+76-96; color lime, chain  C and resi 1-9
+
+# C    B     10   10   asym  0.159832    0.184333    0.168255    0.630    0.180459      0.0000     0.0000     0.2270      93    108     98    3.50    3.82    3.61      5      93       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# B    C     10   10   max   0.159832    0.559830    0.546864    0.630    0.559830      0.0000     0.0000     0.3782      93    108    103    3.50    3.82    3.72     94       9       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_C_B, color gray80, all; color lime, chain  C and resi 1-3+8-9; color marine, chain  B and resi 1-16+18-41+43-73+76+78-97+99
+
+# B    D     10   10   asym  0.000000    0.000000    0.000000    0.240    0.099010      0.0000     0.0000     0.0000       0    375      0    1.00    7.02    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_B_D, color gray80, all; color marine, chain  B and resi None; color orange, chain  D and resi None
+
+# D    B     10   10   asym  0.000000    0.000000    0.000000    0.240    0.124962      0.0000     0.0000     0.0167       0    375      0    1.00    7.02    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# B    D     10   10   max   0.000000    0.000000    0.000000    0.240    0.124962      0.0000     0.0000     0.0083       0    375      0    1.00    7.02    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_D_B, color gray80, all; color orange, chain  D and resi None; color marine, chain  B and resi None
+
+# B    E     10   10   asym  0.000000    0.000000    0.000000    0.250    0.109604      0.0000     0.0000     0.0000       0    411      0    1.00    7.31    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_B_E, color gray80, all; color marine, chain  B and resi None; color yellow, chain  E and resi None
+
+# E    B     10   10   asym  0.000000    0.000000    0.000000    0.250    0.133114      0.0000     0.0000     0.0000       0    411      0    1.00    7.31    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# B    E     10   10   max   0.000000    0.000000    0.000000    0.250    0.133114      0.0000     0.0000     0.0000       0    411      0    1.00    7.31    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_E_B, color gray80, all; color yellow, chain  E and resi None; color marine, chain  B and resi None
+
+# C    D     10   10   asym  0.000000    0.000000    0.000000    0.350    0.064289      0.0000     0.0000     0.0000       0    285      0    1.00    6.21    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_C_D, color gray80, all; color lime, chain  C and resi None; color orange, chain  D and resi None
+
+# D    C     10   10   asym  0.000000    0.000000    0.000000    0.350    0.147255      0.0000     0.0000     0.0000       0    285      0    1.00    6.21    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# C    D     10   10   max   0.000000    0.000000    0.000000    0.350    0.147255      0.0000     0.0000     0.0000       0    285      0    1.00    6.21    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_D_C, color gray80, all; color orange, chain  D and resi None; color lime, chain  C and resi None
+
+# C    E     10   10   asym  0.000000    0.000000    0.000000    0.360    0.075686      0.0275     0.0118     0.0000       0    321      0    1.00    6.56    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_C_E, color gray80, all; color lime, chain  C and resi None; color yellow, chain  E and resi None
+
+# E    C     10   10   asym  0.000000    0.000000    0.000000    0.360    0.161261      0.0275     0.0133     0.0000       0    321      0    1.00    6.56    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# C    E     10   10   max   0.000000    0.000000    0.000000    0.360    0.161261      0.0275     0.0133     0.0000       0    321      0    1.00    6.56    1.00      0       0       0       0   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_E_C, color gray80, all; color yellow, chain  E and resi None; color lime, chain  C and resi None
+
+# D    E     10   10   asym  0.761255    0.858581    0.851960    0.770    0.752334      0.6899     0.3605     0.4660     260    588    548    5.96    8.50    8.25    254     294     136     132   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_D_E, color gray80, all; color orange, chain  D and resi 23-276; color yellow, chain  E and resi 19-312
+
+# E    D     10   10   asym  0.689862    0.818988    0.810487    0.770    0.744155      0.6899     0.4235     0.4884     234    588    545    5.67    8.50    8.23    288     257     138     138   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+# D    E     10   10   max   0.761255    0.858581    0.851960    0.770    0.752334      0.6899     0.4235     0.4772     260    588    548    5.96    8.50    8.25    257     294     138     138   ../inputs/vhio-mel/mel1_jsons/output/tcr_26/seed-380063041_sample-4/tcr_26_seed-380063041_sample-4_model
+alias color_E_D, color gray80, all; color yellow, chain  E and resi 22-309; color orange, chain  D and resi 20-276
+
