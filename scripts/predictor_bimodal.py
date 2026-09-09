@@ -334,13 +334,16 @@ def main():
         test_df["tcr_id"] = test_df["tcr_id"].astype(str)
         out["tcr_id"] = out["tcr_id"].astype(str)
         merged_test = pd.merge(test_df[["tcr_id", "Label"]],out,on="tcr_id",how="left").dropna(subset=["probs"])
-        if not merged_test.empty:
+        if merged_test.empty:
+            print("No overlapping tcr_id between test CSV and predictions for AUC calculation.")
+        elif merged_test["Label"].nunique() < 2:
+            # roc_auc_score raises "Only one class present in y_true" here
+            print("Only one class present in Label: skipping ROC AUC / PR AUC.")
+        else:
             auc_roc = roc_auc_score(merged_test["Label"], merged_test["probs"])
             pr, rec, _ = precision_recall_curve(merged_test["Label"], merged_test["probs"])
             auc_pr = auc(rec, pr)
             print(f"ROC AUC: {auc_roc:.4f} | PR AUC: {auc_pr:.4f}")
-        else:
-            print("No overlapping tcr_id between test CSV and predictions for AUC calculation.")
 
     print(f"Saved -> {out_file_path}")
     

@@ -135,14 +135,29 @@ def main():
     out_path = args.output_path
     df_preds.to_csv(out_path, index=False)
 
-    roc_auc = roc_auc_score(y_hold, hold_preds)
-    precision, recall, _ = precision_recall_curve(y_hold, hold_preds)
-    pr_auc = auc(recall, precision)
-
     print("\n====================")
     print(f"Held-out set: {path}")
-    print(f"ROC AUC: {roc_auc:.4f}")
-    print(f"PR AUC: {pr_auc:.4f}")
+
+    # Score the predictions only when the input carried real ground truth of
+    # both classes. prepare_features() fills in Label=0 when the column is
+    # missing, which is the case when running inference on unlabelled
+    # structures, and roc_auc_score() raises "Only one class present in y_true"
+    # on a single-class column. Matches predictor_esmc / predictor_bimodal,
+    # which already skip the metrics when the test CSV has no Label column.
+    if "Label" not in hold_df.columns:
+        print("No Label column in the input: skipping ROC AUC / PR AUC.")
+    elif y_hold.nunique() < 2:
+        print(
+            f"Only one class present in Label ({y_hold.iloc[0]}): "
+            "skipping ROC AUC / PR AUC."
+        )
+    else:
+        roc_auc = roc_auc_score(y_hold, hold_preds)
+        precision, recall, _ = precision_recall_curve(y_hold, hold_preds)
+        pr_auc = auc(recall, precision)
+        print(f"ROC AUC: {roc_auc:.4f}")
+        print(f"PR AUC: {pr_auc:.4f}")
+
     print(f"Saved predictions to {out_path}")
     print("==================== \n")
     
