@@ -53,8 +53,10 @@ def main():
     args = parser.parse_args()
 
     os.makedirs(args.output_folder, exist_ok=True)
-    cif_files = glob.glob(os.path.join(args.input_folder, "*", "seed-*", "*_model.cif"))
-
+    try:
+        cif_files = glob.glob(os.path.join(args.input_folder, "*", "seed-*", "*.cif"))
+    except Exception as e:
+        cif_files = glob.glob(os.path.join(args.input_folder, "*.cif"))
     print(f"Found {len(cif_files)} CIF files.")
     print(f"Using {args.workers} workers.")
     tasks = zip(cif_files, repeat(args.output_folder))

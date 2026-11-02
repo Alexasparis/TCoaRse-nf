@@ -807,6 +807,10 @@ def process_single_seed(seed_folder, folder_path, tcr_id, threshold, ranking_df,
         'lis': lis, 'ranking_score': ranking_score[0] if len(ranking_score) > 0 else None}
 
     os.remove(merged_pdb)
+    os.remove(pdb_file_path)
+    os.remove(file_output_path)
+    os.remove(pae_output_path)
+    os.remove(pde_output_path)
     return row_data
 
 

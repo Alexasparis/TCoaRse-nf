@@ -112,7 +112,7 @@ def inputs_pmhc(df, out_folder):
         print(f"Warning: {no_uniprot} peptides do not have a uniprot_id in the PredIG input file.")
     return df
 
-def run_commands(out_folder):
+def run_commands(out_folder, predig_model="neoant"):
     predig_path = "/Users/alexascunceparis/Desktop/BSC/d_programs/PredIG"
     netmhcpan_path = "/Users/alexascunceparis/Desktop/BSC/d_programs/netMHCpan-4.2/netMHCpan"
 
@@ -149,7 +149,7 @@ def run_commands(out_folder):
     # PredIG: 
     predig_input_path = os.path.join(out_folder, "predig_input.csv")
     
-    predig_command = f"Rscript {predig_path}/scripts/predig_pipe1_container.R --input {predig_input_path} --out {out_folder} --model neoant --exp_name predig_output"
+    predig_command = f"Rscript {predig_path}/scripts/predig_pipe1_container.R --input {predig_input_path} --out {out_folder} --model {predig_model} --exp_name predig_output"
     print(f"\nPredIG command: {predig_command}")
 
     if not os.path.isfile(predig_path):
@@ -164,6 +164,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate AlphaFold3 JSON input files for TCR–pMHC complexes.")
     parser.add_argument("--in_df", required=True, help="Path to the input CSV file containing TCR–pMHC data.")
     parser.add_argument("--out_f", required=True, help="Path to the output folder where filtered TCR-pMHC data will be saved.")
+    parser.add_argument("--predig_model", default="neoant", help="PredIG model to use (default: neoant), options: neoant, path, noncan")
     args = parser.parse_args()
 
     # Parse args
@@ -220,7 +221,7 @@ def main():
     tcr_df = inputs_pmhc(tcr_df, out_folder=output_folder)
 
     # Run the commands for NetMHCpan, MHCflurry and PredIG
-    run_commands(out_folder=output_folder)
+    run_commands(out_folder=output_folder, predig_model=args.predig_model)
 
     # Print instructions to run pmhc_filtering.py
     print("Now run:\n","python pmhc_filtering.py --out_f " + output_folder + " --tcrpmhc " + os.path.join(output_folder, "tcrpmhc_full.csv"))
