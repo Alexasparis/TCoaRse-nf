@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-#python stitch.py --in_df ../input.csv --out_f ../out_f
-
 import subprocess
 import pandas as pd
 import argparse
 import os
 import subprocess
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+from config import DATA_DIR, PREDIG_PATH, NETMHCPAN_PATH
 
 def reorder_add_columns(df):
     df_reordered = df.copy()
@@ -51,7 +52,7 @@ def fasta_to_df(fasta_file):
     return pd.DataFrame({'mhc_allele': names, 'mhc_seq': sequences})
 
 def add_mhc_sequences(tcr_df, hla_col="MHC_allele", seq_col="MHC_seq", mhc_seq_col="mhc_seq"):
-    df_hla = fasta_to_df("../data/hla_prot.fasta").drop_duplicates("mhc_allele")
+    df_hla = fasta_to_df(os.path.join(DATA_DIR, "hla_prot.fasta")).drop_duplicates("mhc_allele")
     lookup = dict(zip(df_hla["mhc_allele"].str.strip(), df_hla[mhc_seq_col]))
     hla = tcr_df[hla_col].str.strip()
     tcr_df[seq_col] = hla.map(lookup).fillna((hla + ":01").map(lookup)).fillna((hla + ":01:01").map(lookup)).fillna("")
@@ -78,7 +79,7 @@ def inputs_pmhc(df, out_folder):
 
     # PredIG input
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    human_index = os.path.join(script_dir, "..", "data", "human_index")
+    human_index = os.path.join(DATA_DIR, "human_index")
     human_index = os.path.abspath(human_index)
 
     subprocess.run(["java","-jar", os.path.join(script_dir, "PeptideMatchCMD_1.1.jar"),"-a", "query", "-i", human_index,
@@ -113,8 +114,8 @@ def inputs_pmhc(df, out_folder):
     return df
 
 def run_commands(out_folder, predig_model="neoant"):
-    predig_path = "/Users/alexascunceparis/Desktop/BSC/d_programs/PredIG"
-    netmhcpan_path = "/Users/alexascunceparis/Desktop/BSC/d_programs/netMHCpan-4.2/netMHCpan"
+    predig_path = PREDIG_PATH
+    netmhcpan_path = NETMHCPAN_PATH
 
     # NetMHCpan:
     hla_list_path = os.path.join(out_folder, "alleles_list.txt")

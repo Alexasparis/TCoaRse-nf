@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# python energetic_scorer.py -cmd ../structures/pdb_cm/ ../structures/vdjdb_cm -pot ../potentials/pot -out scores.csv -t 8 -w 8
-
 import argparse
 import pandas as pd
 import os
@@ -18,7 +16,7 @@ warnings.simplefilter("ignore")
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 from utils import parse_general_file, filter_contacts
-from config import STRUCTURES_ANNOTATION_DIR
+from config import CHAIN_INFO_PATH, POTENTIALS_DIR
 
 # ---------------- GLOBALS ----------------
 tcr_p_dict = None
@@ -180,27 +178,31 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-cmd", "--contact_maps", nargs="+", type=str, required=True)
     parser.add_argument("-pdb", "--pdb_dir", nargs="+", type=str, required=True)
-    parser.add_argument("-pot", "--potential_dir", type=str, required=True)
-    parser.add_argument("-chains", "--chain_map", type=str, default="D:E:C:A:B")
+    parser.add_argument("-pot", "--potential", type=str, default=os.path.join(POTENTIALS_DIR, "pot_7"), help="Path to potential files (default: pot_7)")
+    parser.add_argument("-chains", "--chain_map", type=str, default="D:E:C:B:A", help="Chain mapping TCRA:TCRB:PEPTIDE:B2M:MHC (default: D:E:C:B:A)")
     parser.add_argument("-out", "--output_file", type=str, default="output.csv")
     parser.add_argument("-t", "--threshold", type=int, required=False, default=7)
     parser.add_argument("-w", "--max_workers", type=int, default=os.cpu_count())
     parser.add_argument("-io", "--io_workers", type=int, default=8)
-    parser.add_argument("-notexp", "--not_experimental", action="store_true")
     args = parser.parse_args()
     start_time = time.time()
 
     print("Loading data...")
-    chain_map = dict(zip(["tcra_chain", "tcrb_chain", "peptide_chain", "mhc_chain", "b2m_chain"], args.chain_map.split(":")))
-    
-    if args.not_experimental:
-        chain_dict_local = chain_map
-    else:
-        chain_dict_local = parse_general_file(os.path.join(STRUCTURES_ANNOTATION_DIR, "chain_info.txt"))
-    
-    tcr_mhc = pd.read_csv(os.path.join(args.potential_dir, "tcr_mhc_potential.csv"))
-    tcr_p = pd.read_csv(os.path.join(args.potential_dir, "tcr_p_potential.csv"))
-    p_mhc = pd.read_csv(os.path.join(args.potential_dir, "p_mhc_potential.csv"))
+    cm = args.chain_map.split(':')
+
+    chain_map = {
+        'tcra_chain': cm[0],
+        'tcrb_chain': cm[1],
+        'peptide_chain': cm[2],
+        'b2m_chain': cm[3],
+        'mhc_chain': cm[4]}
+
+    chain_dict_local = parse_general_file(CHAIN_INFO_PATH)
+
+    potential_dir = args.potential
+    tcr_mhc = pd.read_csv(os.path.join(potential_dir, "tcr_mhc_potential.csv"))
+    tcr_p = pd.read_csv(os.path.join(potential_dir, "tcr_p_potential.csv"))
+    p_mhc = pd.read_csv(os.path.join(potential_dir, "p_mhc_potential.csv"))
 
     contact_folders = [c.strip() for c in args.contact_maps]
     info_map_local = {}

@@ -11,11 +11,13 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from anarci import anarci
 from transformers import AutoModelForMaskedLM, AutoTokenizer
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+from config import ESMC_DIR
 
 cdr_ranges = {"cdr1": (27, 38), "cdr2": (56, 65), "cdr3": (104, 118)} 
 
 def load_model(device):
-    model_path = "/gpfs/projects/bsc72/weights/ESMC-6B"
+    model_path = ESMC_DIR
     model_name = "biohub/ESMC-6B"
 
     if device.type == "cuda":

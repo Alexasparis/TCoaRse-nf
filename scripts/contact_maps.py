@@ -1,6 +1,3 @@
-# List mode: python get_contact_maps.py -pdbl ../structures/pdb/1ao7.pdb ../structures/pdb/1bd2.pdb ../structures/pdb/1fo0.pdb  -out ./pdb_cm -workers 8 
-# Folder mode: python get_contact_maps.py -pdb ../structures/pdb/ -out ./pdb_cm -workers 8
-
 import os, time, argparse, sys
 import pandas as pd
 import numpy as np
@@ -9,9 +6,8 @@ from Bio import PDB
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
 from utils import parse_general_file, residue_mapping
-from config import STRUCTURES_ANNOTATION_DIR
+from config import CHAIN_INFO_PATH
 
 
 CHAIN_DICT = CHAIN_MAP = OUTPUT_DIR = None
@@ -103,15 +99,13 @@ def process_pdb(pdb_path):
         print(f"{pdb_id}: {e}")
         return "ERROR"
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-pdbl", "--pdb_list", nargs="+")
     parser.add_argument("-pdb", "--pdb_folder")
     parser.add_argument("-out", "--output_folder", required=True)
     parser.add_argument("-workers", type=int, default=os.cpu_count())
-    parser.add_argument("-cm", "--chain_map", default="D:E:C:B:A")
-    parser.add_argument("-notexp", "--not_experimental", action="store_true")
+    parser.add_argument("-cm", "--chain_map", default="D:E:C:B:A", help="Chain mapping TCRA:TCRB:PEPTIDE:B2M:MHC (default: D:E:C:B:A)")
     args = parser.parse_args()
     os.makedirs(args.output_folder, exist_ok=True)
     cm = args.chain_map.split(':')
@@ -122,10 +116,8 @@ def main():
         'peptide_chain': cm[2],
         'b2m_chain': cm[3],
         'mhc_chain': cm[4]}
-    if args.not_experimental:
-        chain_dict = chain_map
-    else:
-        chain_dict = parse_general_file(os.path.join(STRUCTURES_ANNOTATION_DIR, "chain_info.txt"))
+
+    chain_dict = parse_general_file(CHAIN_INFO_PATH)
 
     # INPUT MODE
     if args.pdb_list is not None and len(args.pdb_list) > 0:

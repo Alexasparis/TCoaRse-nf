@@ -18,9 +18,9 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("-tcoarse","--input_tcoarse",required=True)
     ap.add_argument("-metadata","--input_metadata",required=False)
-    ap.add_argument("-tar","--input_pydock",required=True)
+    ap.add_argument("-pydock","--input_pydock",required=True)
     ap.add_argument("-metrics","--input_metrics",required=False)
-    ap.add_argument("-o","--output",required=True)
+    ap.add_argument("-out","--output",required=True)
     a=ap.parse_args()
 
     base=os.path.splitext(a.input_pydock)[0]
@@ -43,16 +43,13 @@ def main():
     df1["model_number"]=df1["model_number"].astype(int)
 
     merged=pd.merge(df1,df,on=["tcr_id","model_number"],how="inner")
-    print(merged.columns.tolist())
 
     if a.input_metadata:
         input_metadata=pd.read_csv(a.input_metadata)
-        print(input_metadata.columns.tolist())
         merged=pd.merge(merged,input_metadata,on=["tcr_id", "model_number"],how="left")
 
     if a.input_metrics:
         input_metrics=pd.read_csv(a.input_metrics)
-        print(input_metrics.columns.tolist())
         merged=pd.merge(merged,input_metrics,on=["tcr_id", "model_number"],how="left")
 
     merged = merged.loc[:, ~merged.columns.str.endswith('_y')]

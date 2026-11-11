@@ -1,193 +1,247 @@
 #!/usr/bin/env python3
-import argparse, os, subprocess, tempfile
+import os
+os.environ.setdefault("OMP_NUM_THREADS","1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS","1")
+os.environ.setdefault("MKL_NUM_THREADS","1")
+import argparse
 import numpy as np
 import pandas as pd
+from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor
 from Bio.Align import PairwiseAligner
-from Levenshtein import distance as lev_distance
+from rapidfuzz.process import cdist
+from rapidfuzz.distance import Levenshtein
 from tcrdist.repertoire import TCRrep
-from joblib import Parallel, delayed
 from tqdm import tqdm
-import uuid
 from DockQ.DockQ import load_PDB,run_on_all_native_interfaces
-from functools import lru_cache
-from concurrent.futures import ProcessPoolExecutor,as_completed
-from itertools import islice
-import os
-import shutil
-
-aligner = PairwiseAligner()
-aligner.mode = "local"
-aligner.match_score = 2
-aligner.mismatch_score = -1
-aligner.open_gap_score = -5
-aligner.extend_gap_score = -0.5
-
-def parse_general_file(general_file):
-    df = pd.read_csv(general_file, sep='\t')
-    pdb_dict = {}
-
-    for pdb_id, group in df.groupby('pdb.id'):
-        pdb_id = pdb_id.split('.')[0]
-        chains = {
-            'tcra_chain': None,
-            'tcrb_chain': None,
-            'peptide_chain': None,
-            'mhc_chain': None,
-            'b2_chain': None}
-        for _, row in group.iterrows():
-            chain_id = row['chain.id']
-            chain_type = row['chain.type']
-            chain_component = row['chain.component']
-            chain_supertype = row['chain.supertype']
-
-            if chain_component == 'TCR' and chain_type == 'TRA':
-                chains['tcra_chain'] = chain_id
-            elif chain_component == 'TCR' and chain_type == 'TRB':
-                chains['tcrb_chain'] = chain_id
-            elif chain_component == 'PEPTIDE':
-                chains['peptide_chain'] = chain_id
-            elif chain_component == 'MHC' and chain_supertype == 'MHCI' and chain_type == 'MHCa':
-                chains['mhc_chain'] = chain_id
-            elif chain_component == 'MHC' and chain_supertype == 'MHCI' and chain_type == 'MHCb':
-                chains['b2_chain'] = chain_id
-
-        pdb_dict[pdb_id] = chains
-    return pdb_dict
-
-def sw(s1, s2):
-    if pd.isna(s1) or pd.isna(s2): return np.nan
-    return aligner.score(s1, s2) / (2 * min(len(s1), len(s2)))
-
-def lev(s1, s2):
-    if pd.isna(s1) or pd.isna(s2): return np.nan
-    return 1.0 if max(len(s1), len(s2)) == 0 else 1 - lev_distance(s1, s2) / max(len(s1), len(s2))
-
-def stats(x, p):
-    x = np.asarray(x, float)
-    return {f"{p}_min": np.nanmin(x), f"{p}_mean": np.nanmean(x), f"{p}_max": np.nanmax(x)}
-
-def remove_headers(file_path):
-    with open(file_path) as f:
-        return [l for l in f if l.startswith("ATOM") and len(l) > 21]
-
-def get_chains(lines):
-    return set([x[21].strip() if x[21].strip() else "?" for x in lines])
-
-def merge_pdb(pdb_file,chain_mapping):
-    base=os.path.splitext(os.path.basename(pdb_file))[0]
-    tmpdir=tempfile.mkdtemp(prefix=f"{uuid.uuid4().hex[:8]}_")
-    cleaned=os.path.join(tmpdir,f"{base}.pdb")
-    receptor=os.path.join(tmpdir,"A.pdb")
-    ligand=os.path.join(tmpdir,"B.pdb")
-    merged=os.path.join(tmpdir,f"{base}_merged.pdb")
-    lines=remove_headers(pdb_file)
-    with open(cleaned,"w") as f:f.writelines(lines)
-    present=get_chains(lines)
-    required=[chain_mapping["mhc_chain"],chain_mapping["peptide_chain"],chain_mapping["tcra_chain"],chain_mapping["tcrb_chain"]]
-    missing=set([x for x in required if x not in [None,"?"]])-present
-    if missing:raise ValueError(f"{base}: faltan cadenas {missing}, presentes={present}, mapping={chain_mapping}")
-    receptor_chains=",".join([x for x in [chain_mapping["mhc_chain"],chain_mapping["b2_chain"],chain_mapping["peptide_chain"]] if x not in [None,"?"]])
-    ligand_chains=",".join([x for x in [chain_mapping["tcra_chain"],chain_mapping["tcrb_chain"]] if x not in [None,"?"]])
-    subprocess.run(f"pdb_selchain -{receptor_chains} {cleaned} | pdb_chain -A | pdb_reres -1 | pdb_delhetatm > {receptor}",shell=True,check=True)
-    subprocess.run(f"pdb_selchain -{ligand_chains} {cleaned} | pdb_chain -B | pdb_reres -1 | pdb_delhetatm > {ligand}",shell=True,check=True)
-    receptor_lines=remove_headers(receptor)
-    ligand_lines=remove_headers(ligand)
-    if not receptor_lines or not ligand_lines:raise ValueError(f"{base}: receptor o ligand vacio")
-    with open(merged,"w") as f:f.writelines(receptor_lines+ligand_lines)
-    return merged,tmpdir
-
-def prepare_merged(pdb_dir,merged_dir,chain_dict,pdb_filter=None):
-    os.makedirs(merged_dir,exist_ok=True)
-    default={"tcra_chain":"D","tcrb_chain":"E","mhc_chain":"A","b2_chain":"B","peptide_chain":"C"}
-    pdbs=[x for x in os.listdir(pdb_dir) if x.endswith(".pdb")]
-    if pdb_filter is not None:pdbs=[x for x in pdbs if x in pdb_filter]
-    for pdb in tqdm(pdbs,desc="Preparing merged PDBs"):
-        base=pdb.replace(".pdb","")
-        out=os.path.join(merged_dir,f"{base}_merged.pdb")
-        if os.path.exists(out):continue
-        pdb_id=base.split("_")[0] if "_" not in base else base.rsplit("_",1)[0]
-        mapping=chain_dict.get(pdb_id,default)
-        try:
-            merged,_=merge_pdb(os.path.join(pdb_dir,pdb),mapping)
-            shutil.copy(merged,out)
-        except Exception as e:
-            print(f"Skipping {pdb}: {e}")
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+from config import PDB_INFO_CSV, PDB_DIR
 
 CHAIN_MAP={"A":"A","B":"B"}
+AF3={"tcra_chain":"D","tcrb_chain":"E","mhc_chain":"A","b2_chain":"B","peptide_chain":"C"}
+NANV=np.full(5,np.nan,dtype=np.float32)
 
-def score_pair(post_id,pdb_id,merged_post,merged_pdbs):
+def parse_general_file(general_file):
+    df=pd.read_csv(general_file,sep="\t")
+    out={}
+    for pid,cid,comp,typ,sup in zip(df["pdb.id"],df["chain.id"],df["chain.component"],df["chain.type"],df["chain.supertype"]):
+        c=out.setdefault(pid.split(".")[0],{"tcra_chain":None,"tcrb_chain":None,"peptide_chain":None,"mhc_chain":None,"b2_chain":None})
+        if comp=="TCR" and typ=="TRA": c["tcra_chain"]=cid
+        elif comp=="TCR" and typ=="TRB": c["tcrb_chain"]=cid
+        elif comp=="PEPTIDE": c["peptide_chain"]=cid
+        elif comp=="MHC" and sup=="MHCI" and typ=="MHCa": c["mhc_chain"]=cid
+        elif comp=="MHC" and sup=="MHCI" and typ=="MHCb": c["b2_chain"]=cid
+    return out
+
+def agg(M,w):
+    ok=~np.isnan(M)
+    den=ok@w
+    bad=den==0
+    mn=np.where(ok,M,np.inf).min(1)
+    mx=np.where(ok,M,-np.inf).max(1)
+    me=np.where(ok,M,0)@w/np.where(bad,np.nan,den)
+    mn[bad]=np.nan
+    mx[bad]=np.nan
+    return mn,me,mx
+
+def calculate_tcrdist(pre,post,nj):
+    cols=["tcr_id","CDR3a","CDR3b","TRAV","TRBV","TRAJ","TRBJ","CDR1a","CDR1b","CDR2a","CDR2b"]
+    ren={"tcr_id":"clone_id","CDR3a":"cdr3_a_aa","CDR3b":"cdr3_b_aa","TRAV":"v_a_gene","TRBV":"v_b_gene","TRAJ":"j_a_gene","TRBJ":"j_b_gene","CDR1a":"cdr1_a_aa","CDR1b":"cdr1_b_aa","CDR2a":"cdr2_a_aa","CDR2b":"cdr2_b_aa"}
+    q=post[cols].rename(columns=ren).copy()
+    db=pre[cols].rename(columns=ren).copy()
+    q["count"]=1
+    db["count"]=1
+    q["pmhc_a_aa"]="AAAAA"
+    q["pmhc_b_aa"]="AAAAA"
+    db["pmhc_a_aa"]="AAAAA"
+    db["pmhc_b_aa"]="AAAAA"
+    tr=TCRrep(cell_df=db,organism="human",chains=["alpha","beta"],db_file="alphabeta_gammadelta_db.tsv",infer_cdrs=False,infer_all_genes=False,deduplicate=False,compute_distances=False,cpus=nj)
+    tr.compute_rect_distances(df=q,df2=db)
+    specs = {
+        "CDR1a": tr.rw_cdr1_a_aa,
+        "CDR2a": tr.rw_cdr2_a_aa,
+        "CDR3a": tr.rw_cdr3_a_aa,
+        "CDR1b": tr.rw_cdr1_b_aa,
+        "CDR2b": tr.rw_cdr2_b_aa,
+        "CDR3b": tr.rw_cdr3_b_aa,}
+
+    res = {"tcr_id": post["tcr_id"].to_numpy()}
+    for region, matrix in specs.items():
+        values = np.asarray(matrix, dtype=np.float32)
+        res[f"tcrdist_{region}_min"] = np.nanmin(values, axis=1)
+        res[f"tcrdist_{region}_mean"] = np.nanmean(values, axis=1)
+        res[f"tcrdist_{region}_max"] = np.nanmax(values, axis=1)
+
+    return res
+
+_REF=None
+_AL=None
+
+def init_sw(ref):
+    global _REF,_AL
+    _REF=ref
+    _AL=PairwiseAligner(mode="local",match_score=2,mismatch_score=-1,open_gap_score=-5,extend_gap_score=-0.5)
+
+def sw_rows(qs):
+    return np.array([[np.nan if (not q or not r) else _AL.score(q,r)/(2*min(len(q),len(r))) for r in _REF] for q in qs],dtype=np.float32)
+
+def sw_matrix(q,r,nj):
+    if not q: return np.empty((0,len(r)),dtype=np.float32)
+    ch=[c for c in np.array_split(np.array(q,dtype=object),min(len(q),nj*4)) if len(c)]
+    with ProcessPoolExecutor(nj,initializer=init_sw,initargs=(r,)) as ex:
+        return np.vstack(list(ex.map(sw_rows,ch)))
+
+def seq_sim(pre,post,col,name,kind,nj):
+    pc,pu=pd.factorize(pre[col])
+    qc,qu=pd.factorize(post[col])
+    w=np.bincount(pc[pc>=0],minlength=len(pu)).astype(np.float32)
+    pu=[str(x) for x in pu]
+    qu=[str(x) for x in qu]
+    M=sw_matrix(qu,pu,nj) if kind=="sw" else cdist(qu,pu,scorer=Levenshtein.normalized_similarity,workers=nj,dtype=np.float32)
+    return {f"sim_{name}_{stat}":np.append(v,np.nan)[qc] for stat,v in zip(("min","mean","max"),agg(M,w))}
+
+def renumber(lines,chains,new):
+    out=[]
+    last=None
+    n=0
+    for l in lines:
+        if l[21] in chains:
+            key=l[21:27]
+            if key!=last:
+                n+=1
+                last=key
+            out.append(f"{l[:21]}{new}{n:4d} {l[27:]}")
+    return out
+
+def merge_pdb(path,mp):
+
+    lines=[l for l in Path(path).read_text().splitlines(True) if l.startswith("ATOM") and len(l)>21]
+    present={l[21].strip() or "?" for l in lines}
+    rec={x for x in (mp["mhc_chain"],mp["b2_chain"],mp["peptide_chain"]) if x not in (None,"?")}
+    lig={x for x in (mp["tcra_chain"],mp["tcrb_chain"]) if x not in (None,"?")}
+    missing={x for x in (mp["mhc_chain"],mp["peptide_chain"],mp["tcra_chain"],mp["tcrb_chain"]) if x not in (None,"?")}-present
+    if missing: raise ValueError(f"faltan cadenas {missing}, presentes={present}, mapping={mp}")
+    rl=renumber(lines,rec,"A")
+    ll=renumber(lines,lig,"B")
+    if not rl or not ll: raise ValueError("receptor o ligand vacio")
+    return rl+ll
+
+def prep_one(job):
+    src,out,mp=job
     try:
-        model_path=os.path.join(merged_post,f"{post_id}_merged.pdb")
-        native_path=os.path.join(merged_pdbs,f"{pdb_id}_merged.pdb")
-        model=load_PDB(model_path)
-        native=load_PDB(native_path)
-        info,total=run_on_all_native_interfaces(model,native,chain_map=CHAIN_MAP)
-        r=next(iter(info.values()))
-        return [post_id,pdb_id,r.get("DockQ",total),r.get("iRMSD"),r.get("LRMSD"),r.get("fnat"),r.get("clashes")]
+        Path(out+".tmp").write_text("".join(merge_pdb(src,mp)))
+        os.replace(out+".tmp",out)
+        return None
     except Exception as e:
-        print(f"FAILED inside DockQ: {post_id} vs {pdb_id}: {e}",flush=True)
-        return [post_id,pdb_id,None,None,None,None,None]
+        return f"{os.path.basename(src)}: {e}"
 
-def score_chunk(chunk):
-    return [score_pair(*x) for x in chunk]
+def prepare_merged(pdb_dir,merged_dir,chain_dict,flt,ex):
+    os.makedirs(merged_dir,exist_ok=True)
+    jobs=[(os.path.join(pdb_dir,p),os.path.join(merged_dir,p[:-4]+"_merged.pdb"),chain_dict.get(p[:-4].rsplit("_",1)[0],AF3)) for p in os.listdir(pdb_dir) if p.endswith(".pdb") and (flt is None or p in flt)]
+    jobs=[j for j in jobs if not os.path.exists(j[1])]
+    for m in tqdm(ex.map(prep_one,jobs,chunksize=16),total=len(jobs),desc=f"Merging {os.path.basename(merged_dir)}"):
+        if m: print(f"Skipping {m}",flush=True)
 
-def chunked(it,size):
-    while True:
-        x=list(islice(it,size))
-        if not x:return
-        yield x
+def safe_load(path):
+    try:
+        return load_PDB(path)
+    except Exception as e:
+        print(f"FAILED load {path}: {e}",flush=True)
+        return None
 
-def build_jobs(merged_post,merged_pdbs):
-    post=[x.replace("_merged.pdb","") for x in os.listdir(merged_post) if x.endswith("_merged.pdb")]
-    ref=[x.replace("_merged.pdb","") for x in os.listdir(merged_pdbs) if x.endswith("_merged.pdb")]
-    return [(p,r,merged_post,merged_pdbs) for r in ref for p in post]
+def score_pair(model,native,p,r):
+    if model is None or native is None: return NANV
+    try:
+        info,total=run_on_all_native_interfaces(model,native,chain_map=CHAIN_MAP)
+        x=next(iter(info.values()))
+        return np.array([x.get("DockQ",total),x.get("iRMSD"),x.get("LRMSD"),x.get("fnat"),x.get("clashes")],dtype=np.float32)
+    except Exception as e:
+        print(f"FAILED DockQ: {p} vs {r}: {e}",flush=True)
+        return NANV
+
+def score_block(refs,posts,start,mpost,mpre):
+    models=[safe_load(os.path.join(mpost,f"{p}_merged.pdb")) for p in posts]
+    out=np.full((len(refs),len(posts),5),np.nan,dtype=np.float32)
+    for i,r in enumerate(refs):
+        native=safe_load(os.path.join(mpre,f"{r}_merged.pdb"))
+        for j,(p,m) in enumerate(zip(posts,models)):
+            out[i,j]=score_pair(m,native,p,r)
+    return start,out
 
 def main():
     ap=argparse.ArgumentParser()
-    ap.add_argument("-pre",required=True);ap.add_argument("-post",required=True);ap.add_argument("-pre_pdb",required=True);ap.add_argument("-post_pdb",required=True);ap.add_argument("-o_seq",required=True);ap.add_argument("-o_str",required=True);ap.add_argument("-n_jobs",type=int,default=-1)
-    args=ap.parse_args()
-    current_dir=os.path.dirname(os.path.abspath(__file__))
-    chain_dict=parse_general_file(f"{current_dir}/../data/chain_info.txt")
-    af3_mapping={"tcra_chain":"D","tcrb_chain":"E","mhc_chain":"A","b2_chain":"B","peptide_chain":"C"}
-    cols=["CDR3a","CDR3b","TRAV","TRAJ","TRBV","TRBJ","MHC_seq","Epitope"]
-    pre=pd.read_csv(args.pre);post=pd.read_csv(args.post)
-    pre_seq=pre.drop_duplicates("tcr_id").reset_index(drop=True);post_seq=post.drop_duplicates("tcr_id").reset_index(drop=True)
-    cell_df=pd.concat([post_seq[cols],pre_seq[cols]],ignore_index=True).rename(columns={"CDR3a":"cdr3_a_aa","CDR3b":"cdr3_b_aa","TRAV":"v_a_gene","TRAJ":"j_a_gene","TRBV":"v_b_gene","TRBJ":"j_b_gene"})
-    cell_df["count"]=1
-    tr=TCRrep(cell_df=cell_df,organism="human",chains=["alpha","beta"],compute_distances=True)
-    n=len(post_seq)
-    pre_trav=set(pre_seq.TRAV.dropna());pre_traj=set(pre_seq.TRAJ.dropna());pre_trbv=set(pre_seq.TRBV.dropna());pre_trbj=set(pre_seq.TRBJ.dropna());pre_epi=set(pre_seq.Epitope.dropna())
-    def seq_process(i):
-        row=post_seq.iloc[i];f={"tcr_id":row.tcr_id}
-        f.update(stats(tr.pw_cdr3_a_aa[i,n:],"tcrdist_cdr3a"));f.update(stats(tr.pw_cdr3_b_aa[i,n:],"tcrdist_cdr3b"));f.update(stats([sw(row.MHC_seq,x) for x in pre_seq.MHC_seq],"sim_MHC"));f.update(stats([lev(row.Epitope,x) for x in pre_seq.Epitope],"sim_Epitope"))
-        f["TRAV_overlap"]=row.TRAV in pre_trav;f["TRAJ_overlap"]=row.TRAJ in pre_traj;f["TRBV_overlap"]=row.TRBV in pre_trbv;f["TRBJ_overlap"]=row.TRBJ in pre_trbj;f["Epitope_overlap"]=row.Epitope in pre_epi
-        return f
-    pd.DataFrame(Parallel(n_jobs=args.n_jobs)(delayed(seq_process)(i) for i in tqdm(range(n),desc="Sequence"))).to_csv(args.o_seq,index=False)
-    merged_post=os.path.join(os.path.dirname(args.post_pdb),os.path.basename(args.post_pdb)+"_merged")
-    merged_pre=os.path.join(os.path.dirname(args.pre_pdb),os.path.basename(args.pre_pdb)+"_merged")
-    prepare_merged(args.post_pdb,merged_post,{x.split(".")[0]:af3_mapping for x in os.listdir(args.post_pdb) if x.endswith(".pdb")})
-    valid_pdbs=set(pre["tcr_id"].astype(str))
-    pre_filtered=[x for x in os.listdir(args.pre_pdb) if x.endswith(".pdb") and os.path.splitext(x)[0] in valid_pdbs]
-    prepare_merged(args.pre_pdb,merged_pre,chain_dict,pre_filtered)
+    ap.add_argument("-pre",default=PDB_INFO_CSV,required=False)
+    ap.add_argument("-pdb_info",required=True)
+    ap.add_argument("-pre_pdb", default=PDB_DIR, required=False)
+    ap.add_argument("-pdb_dir",required=True)
+    ap.add_argument("-out_seq",required=True)
+    ap.add_argument("-out_str",required=True)
+    ap.add_argument("-workers",type=int,default=-1)
+    ap.add_argument("-block",type=int,default=32)
+    a=ap.parse_args()
+    nj=a.workers if a.workers>0 else (os.cpu_count() or 8)
+    bs=a.block
+    here=os.path.dirname(os.path.abspath(__file__))
+    chain_dict=parse_general_file(f"{here}/../data/chain_info.txt")
+    pre=pd.read_csv(a.pre,dtype={"tcr_id":str})
+    post=pd.read_csv(a.pdb_info,dtype={"tcr_id":str})
 
-    jobs=build_jobs(merged_post,merged_pre)
-    print(f"DockQ comparisons: {len(jobs)}",flush=True)
-    results=[]
+    pre_seq=pre.drop_duplicates("tcr_id").reset_index(drop=True)
+    post_seq=post.drop_duplicates("tcr_id").reset_index(drop=True)
 
-    with ProcessPoolExecutor(max_workers=args.n_jobs if args.n_jobs>0 else 8) as ex:
-        futures={ex.submit(score_pair,*x):x for x in jobs}
-        results=[]
-        for f in tqdm(as_completed(futures),total=len(futures),desc="DockQ"):
-            job=futures[f]
-            try:
-                results.append(f.result())
-            except Exception as e:
-                print(f"FAILED DockQ: post={job[0]} ref={job[1]} error={e}",flush=True)
-            
-    dockq_df=pd.DataFrame(results,columns=["tcr_id","ref_id","DockQ","iRMSD","LRMSD","Fnat","clashes"])
-    struct_df=dockq_df.groupby("tcr_id").agg({"DockQ":["max","mean"],"iRMSD":["min","mean"],"LRMSD":["min","mean"],"Fnat":["max","mean"],"clashes":["min","mean"]}).reset_index()
-    struct_df.columns=["tcr_id","DockQ_max","DockQ_mean","iRMSD_min","iRMSD_mean","LRMSD_min","LRMSD_mean","Fnat_max","Fnat_mean","clashes_min","clashes_mean"]
-    struct_df.to_csv(args.o_str,index=False)
+    for name,df in [("pre",pre_seq),("post",post_seq)]:
+        print(f"\n{name}")
+        for c in ["TCRA","TCRB","CDR1a","CDR2a","CDR3a","CDR1b","CDR2b","CDR3b","TRAV","TRAJ","TRBV","TRBJ"]:
+            if c in df:
+                print(c, "NaN =", df[c].isna().sum(), "dtype =", df[c].dtype)
+    cols=["TCRA","TCRB","CDR1a","CDR2a","CDR3a","CDR1b","CDR2b","CDR3b","TRAV","TRAJ","TRBV","TRBJ"]
+    pre_seq=pre_seq.dropna(subset=cols).copy()
+    post_seq=post_seq.dropna(subset=cols).copy()
 
-if __name__ == "__main__":
+    print("Computing TCRdist similarity...",flush=True)
+    seq=calculate_tcrdist(pre_seq,post_seq,nj)
+
+    print("Computing MHC/epitope similarity...",flush=True)
+    seq.update(seq_sim(pre_seq,post_seq,"MHC_seq","MHC","sw",nj))
+    seq.update(seq_sim(pre_seq,post_seq,"Epitope","Epitope","lev",nj))
+    pd.DataFrame(seq).to_csv(a.out_seq,index=False)
+    pd.DataFrame(seq).to_csv(a.out_str,index=False)
+
+    mpost = os.path.normpath(a.pdb_dir) + "_merged"
+    mpre = os.path.normpath(a.pre_pdb) + "_merged"
+    valid = set(pre["tcr_id"].astype(str) + "_" + pre["model_number"].astype(int).astype(str)) if "model_number" in pre.columns else set(pre["tcr_id"].astype(str))
+
+    print("PRE files:", len([x for x in os.listdir(a.pre_pdb) if x.endswith(".pdb")]), flush=True)
+    print("POST files:", len([x for x in os.listdir(a.pdb_dir) if x.endswith(".pdb")]), flush=True)
+    print("VALID:", len(valid), list(valid)[:10], flush=True)
+    with ProcessPoolExecutor(nj) as ex:
+        prepare_merged(a.pdb_dir,mpost,{},None,ex)
+        #prepare_merged(a.pre_pdb,mpre,chain_dict,{f"{t}.pdb" for t in valid},ex)
+        print("MERGED PRE:", os.listdir(mpre)[:10], flush=True)
+        print("VALID MATCHES:", [x[:-11] for x in os.listdir(mpre) if x.endswith("_merged.pdb") and x[:-11] in valid][:10], flush=True)
+        posts=sorted(x[:-11] for x in os.listdir(mpost) if x.endswith("_merged.pdb"))
+        refs=sorted(x[:-11] for x in os.listdir(mpre) if x.endswith("_merged.pdb") and x[:-11] in valid)
+        n=len(posts)
+        pblocks=[(i,posts[i:i+bs]) for i in range(0,n,bs)]
+        jobs=[(refs[j:j+bs],pb,i,mpost,mpre) for j in range(0,len(refs),bs) for i,pb in pblocks]
+        if not jobs: raise SystemExit("No hay pares para DockQ")
+        print(f"DockQ comparisons: {len(refs)*n} en {len(jobs)} bloques",flush=True)
+        mn=np.full((n,5),np.nan,dtype=np.float32)
+        mx=mn.copy()
+        sm=np.zeros((n,5))
+        ct=np.zeros((n,5))
+        for s,arr in tqdm(ex.map(score_block,*zip(*jobs)),total=len(jobs),desc="DockQ"):
+            sl=slice(s,s+arr.shape[1])
+            mn[sl]=np.fmin(mn[sl],np.fmin.reduce(arr,axis=0))
+            mx[sl]=np.fmax(mx[sl],np.fmax.reduce(arr,axis=0))
+            sm[sl]+=np.nansum(arr,axis=0)
+            ct[sl]+=(~np.isnan(arr)).sum(0)
+    me=sm/np.where(ct>0,ct,np.nan)
+    struct=pd.DataFrame({"tcr_id":posts,"DockQ_max":mx[:,0],"DockQ_mean":me[:,0],"iRMSD_min":mn[:,1],"iRMSD_mean":me[:,1],"LRMSD_min":mn[:,2],"LRMSD_mean":me[:,2],"Fnat_max":mx[:,3],"Fnat_mean":me[:,3],"clashes_min":mn[:,4],"clashes_mean":me[:,4]})
+    # Divide tcr_id into tcr_id and model_number by last _
+    struct[["tcr_id","model_number"]]=struct["tcr_id"].str.rsplit("_",n=1,expand=True)
+    struct.to_csv(a.out_str,index=False)
+
+if __name__=="__main__":
     main()

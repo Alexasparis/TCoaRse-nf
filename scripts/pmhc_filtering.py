@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-#python pmhc_filtering.py --out_f ../out_f --tcrpmhc ../out_f/tcrpmhc_full.csv
-
 import os
 import pandas as pd
 import re
@@ -104,6 +102,8 @@ def load_files (netmhc_pan, mhc_flurry, predig):
     #print("PredIG shape:", predig.shape)
     #print("NetMHCpan shape:", netmhcpan.shape)
     #print("MHCflurry shape:", mhcflurry.shape)
+    # rename in predig the column "HLA_allele" to "allele"
+    predig.rename(columns={"HLA_allele": "allele", "epitope": "peptide"}, inplace=True)
 
     netmhcpan["allele"] = netmhcpan["allele"].apply(fix_allele_star)
     mhcflurry["allele"] = mhcflurry["allele"].apply(fix_allele_star)

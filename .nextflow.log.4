@@ -1,0 +1,209 @@
+nov-11 12:18:49.503 [main] DEBUG nextflow.cli.Launcher - $> nextflow run downstream.nf --af3_dir examples --quality --similarity --consensus --results_dir results --outdir final_results -resume --pydock_archive results/examples_pydock_ene.tar --embeddings_h5 results/examples_emb.h5
+nov-11 12:18:49.550 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 26.04.4
+nov-11 12:18:49.564 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/Users/alexascunceparis/.nextflow/plugins; core-plugins: nf-amazon@3.9.2,nf-azure@1.22.6,nf-cloudcache@0.6.0,nf-codecommit@0.5.3,nf-console@1.3.0,nf-google@1.27.3,nf-k8s@1.5.4,nf-seqera@0.21.0,nf-tower@1.28.1,nf-wave@1.21.0
+nov-11 12:18:49.579 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+nov-11 12:18:49.580 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+nov-11 12:18:49.581 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.14.1 in 'deployment' mode
+nov-11 12:18:49.590 [main] DEBUG nextflow.util.RetryConfig - Missing nextflow session - using default retry config
+nov-11 12:18:49.683 [main] DEBUG nextflow.plugin.PluginUpdater - Using plugin repository: HttpPluginRepository [registry]; url=https://registry.nextflow.io/api
+nov-11 12:18:49.686 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+nov-11 12:18:49.700 [main] DEBUG nextflow.config.ConfigParserFactory - Using config parser v2
+nov-11 12:18:49.731 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+nov-11 12:18:49.731 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+nov-11 12:18:49.748 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /Users/alexascunceparis/.nextflow/secrets/store.json
+nov-11 12:18:49.752 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@24361cfc] - activable => nextflow.secret.LocalSecretsProvider@24361cfc
+nov-11 12:18:49.763 [main] DEBUG nextflow.cli.CmdRun - Launching `downstream.nf` [nasty_majorana] - revision: d27d7ef21d
+nov-11 12:18:49.818 [main] DEBUG nextflow.Session - Session UUID: c629b56b-22a7-4e28-90a1-32d9e2883545
+nov-11 12:18:49.818 [main] DEBUG nextflow.Session - Run name: nasty_majorana
+nov-11 12:18:49.819 [main] DEBUG nextflow.Session - Executor pool size: 10
+nov-11 12:18:49.823 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+nov-11 12:18:49.826 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=30; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+nov-11 12:18:49.843 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 26.04.4 build 12445
+  Created: 17-06-2026 16:30 UTC (18:30 CEST)
+  System: Mac OS X 14.5
+  Runtime: Groovy 4.0.31 on OpenJDK 64-Bit Server VM 17.0.17+0
+  Encoding: UTF-8 (UTF-8)
+  Process: 73191@MacBook-Pro-de-Alex-2.local [127.0.0.1]
+  CPUs: 10 - Mem: 16 GB (1.9 GB) - Swap: 7 GB (1.3 GB)
+nov-11 12:18:49.854 [main] DEBUG nextflow.Session - Work-dir: /Users/alexascunceparis/Desktop/TCoaRse-nf/work [Mac OS X]
+nov-11 12:18:49.854 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /Users/alexascunceparis/Desktop/TCoaRse-nf/bin
+nov-11 12:18:49.859 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+nov-11 12:18:49.863 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+nov-11 12:18:49.864 [main] DEBUG nextflow.Session - Observer factory (v2): DefaultObserverFactory
+nov-11 12:18:49.878 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+nov-11 12:18:49.884 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 11; maxThreads: 1000
+nov-11 12:18:49.925 [main] DEBUG nextflow.Session - Session start
+nov-11 12:18:49.928 [main] DEBUG nextflow.script.ScriptLoaderFactory - Using script parser v2
+nov-11 12:18:50.327 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+nov-11 12:18:50.415 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.415 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.419 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+nov-11 12:18:50.422 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=10; memory=16 GB; capacity=10; pollInterval=100ms; dumpInterval=5m
+nov-11 12:18:50.423 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+nov-11 12:18:50.441 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'COLLECT_PDBS': maxForks=0; fair=false; array=0
+nov-11 12:18:50.469 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.469 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.470 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'METADATA': maxForks=0; fair=false; array=0
+nov-11 12:18:50.471 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.471 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.471 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'CONTACT_MAPS': maxForks=0; fair=false; array=0
+nov-11 12:18:50.474 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.474 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.474 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'TCOARSE_ENERGIES': maxForks=0; fair=false; array=0
+nov-11 12:18:50.476 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.476 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.476 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MERGE_ENERGIES': maxForks=0; fair=false; array=0
+nov-11 12:18:50.478 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.478 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.479 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'PREDICT_STR': maxForks=0; fair=false; array=0
+nov-11 12:18:50.480 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.481 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.481 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'PREDICT_SEQ': maxForks=0; fair=false; array=0
+nov-11 12:18:50.483 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.483 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.483 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'PREDICT_BI': maxForks=0; fair=false; array=0
+nov-11 12:18:50.487 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.487 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.487 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'CONFIDENCE': maxForks=0; fair=false; array=0
+nov-11 12:18:50.488 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.488 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.489 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'QUALITY_TIERS': maxForks=0; fair=false; array=0
+nov-11 12:18:50.490 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.490 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.491 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'AF3_SIMILARITY': maxForks=0; fair=false; array=0
+nov-11 12:18:50.493 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.493 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.493 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'REPLICA_CONSENSUS': maxForks=0; fair=false; array=0
+nov-11 12:18:50.496 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+nov-11 12:18:50.497 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+nov-11 12:18:50.497 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'FINAL_OUTPUT': maxForks=0; fair=false; array=0
+nov-11 12:18:50.499 [main] DEBUG nextflow.Session - Process names: COLLECT_PDBS, MERGE_ENERGIES, PREDICT_STR, PREDICT_BI, QUALITY_TIERS, AF3_SIMILARITY, FINAL_OUTPUT, PYDOCK, TCOARSE_ENERGIES, EMBEDDINGS, METADATA, CONTACT_MAPS, CONFIDENCE, PREDICT_SEQ, REPLICA_CONSENSUS
+nov-11 12:18:50.500 [main] DEBUG nextflow.Session - Igniting dataflow network (20)
+nov-11 12:18:50.500 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > COLLECT_PDBS
+nov-11 12:18:50.500 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > METADATA
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > CONTACT_MAPS
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > TCOARSE_ENERGIES
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MERGE_ENERGIES
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > PREDICT_STR
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > PREDICT_SEQ
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > PREDICT_BI
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > CONFIDENCE
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > QUALITY_TIERS
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > AF3_SIMILARITY
+nov-11 12:18:50.501 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > REPLICA_CONSENSUS
+nov-11 12:18:50.502 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > FINAL_OUTPUT
+nov-11 12:18:50.502 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Main: /Users/alexascunceparis/Desktop/TCoaRse-nf/downstream.nf
+nov-11 12:18:50.502 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+nov-11 12:18:50.502 [main] DEBUG nextflow.Session - Session await
+nov-11 12:18:50.599 [Actor Thread 6] INFO  nextflow.processor.TaskProcessor - [a2/6a3647] Cached process > COLLECT_PDBS
+nov-11 12:18:50.599 [Actor Thread 11] INFO  nextflow.processor.TaskProcessor - [de/b2e475] Cached process > CONFIDENCE
+nov-11 12:18:50.612 [Actor Thread 8] INFO  nextflow.processor.TaskProcessor - [01/a308f3] Cached process > QUALITY_TIERS
+nov-11 12:18:50.613 [Actor Thread 3] INFO  nextflow.processor.TaskProcessor - [ad/af0d0b] Cached process > METADATA
+nov-11 12:18:50.617 [Actor Thread 11] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=30; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+nov-11 12:18:50.641 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+nov-11 12:18:50.642 [Task submitter] INFO  nextflow.Session - [f8/98c0a1] Submitted process > REPLICA_CONSENSUS
+nov-11 12:18:57.652 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: REPLICA_CONSENSUS; status: COMPLETED; exit: 1; error: -; workDir: /Users/alexascunceparis/Desktop/TCoaRse-nf/work/f8/98c0a15867d3c45a7a48a5ac645bcc]
+nov-11 12:18:57.652 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=30; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+nov-11 12:18:57.655 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+nov-11 12:18:57.655 [Task submitter] INFO  nextflow.Session - [a7/845f36] Submitted process > PREDICT_SEQ
+nov-11 12:18:57.657 [TaskFinalizer-1] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=REPLICA_CONSENSUS; work-dir=/Users/alexascunceparis/Desktop/TCoaRse-nf/work/f8/98c0a15867d3c45a7a48a5ac645bcc
+  error [nextflow.exception.ProcessFailedException]: Process `REPLICA_CONSENSUS` terminated with an error exit status (1)
+nov-11 12:18:57.664 [TaskFinalizer-1] ERROR nextflow.processor.TaskProcessor - Error executing process > 'REPLICA_CONSENSUS'
+
+Caused by:
+  Process `REPLICA_CONSENSUS` terminated with an error exit status (1)
+
+
+Command executed:
+
+  python '/Users/alexascunceparis/Desktop/TCoaRse-nf/scripts/pw_sim.py' --folder "models" --output consensus.csv --workers 10
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command error:
+  
+  DockQ:   0%|          | 0/110 [00:00<?, ?it/s]
+  DockQ:   0%|          | 0/110 [00:00<?, ?it/s]
+  concurrent.futures.process._RemoteTraceback: 
+  """
+  Traceback (most recent call last):
+    File "/opt/miniconda3/envs/esm/lib/python3.14/concurrent/futures/process.py", line 254, in _process_worker
+      r = call_item.fn(*call_item.args, **call_item.kwargs)
+    File "/Users/alexascunceparis/Desktop/TCoaRse-nf/scripts/pw_sim.py", line 61, in process_job
+      metrics = run_dockq(pdb_i, pdb_j)
+    File "/Users/alexascunceparis/Desktop/TCoaRse-nf/scripts/pw_sim.py", line 44, in run_dockq
+      out = subprocess.run(f"DockQ {model} {native} --mapping AB:AB", shell=True, capture_output=True, text=True, check=True).stdout
+            ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/miniconda3/envs/esm/lib/python3.14/subprocess.py", line 577, in run
+      raise CalledProcessError(retcode, process.args,
+                               output=stdout, stderr=stderr)
+  subprocess.CalledProcessError: Command 'DockQ /var/folders/rz/cmf4kp9120lgpq6m34yb21480000gn/T/fb0870b5_gdab9aoj/merged/tcr_25_0_merged.pdb /var/folders/rz/cmf4kp9120lgpq6m34yb21480000gn/T/f7e80d8a_mro8f8_b/merged/tcr_25_1_merged.pdb --mapping AB:AB' returned non-zero exit status 1.
+  """
+  
+  The above exception was the direct cause of the following exception:
+  
+  Traceback (most recent call last):
+    File "/Users/alexascunceparis/Desktop/TCoaRse-nf/scripts/pw_sim.py", line 84, in <module>
+      main()
+      ~~~~^^
+    File "/Users/alexascunceparis/Desktop/TCoaRse-nf/scripts/pw_sim.py", line 81, in main
+      process_comparisons(generate_dict(args.folder), args.workers).to_csv(args.output, index=False)
+      ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/Users/alexascunceparis/Desktop/TCoaRse-nf/scripts/pw_sim.py", line 71, in process_comparisons
+      results = [f.result() for f in tqdm(as_completed(futures), total=len(jobs), desc="DockQ")]
+                 ~~~~~~~~^^
+    File "/opt/miniconda3/envs/esm/lib/python3.14/concurrent/futures/_base.py", line 443, in result
+      return self.__get_result()
+             ~~~~~~~~~~~~~~~~~^^
+    File "/opt/miniconda3/envs/esm/lib/python3.14/concurrent/futures/_base.py", line 395, in __get_result
+      raise self._exception
+  subprocess.CalledProcessError: Command 'DockQ /var/folders/rz/cmf4kp9120lgpq6m34yb21480000gn/T/fb0870b5_gdab9aoj/merged/tcr_25_0_merged.pdb /var/folders/rz/cmf4kp9120lgpq6m34yb21480000gn/T/f7e80d8a_mro8f8_b/merged/tcr_25_1_merged.pdb --mapping AB:AB' returned non-zero exit status 1.
+
+Work dir:
+  /Users/alexascunceparis/Desktop/TCoaRse-nf/work/f8/98c0a15867d3c45a7a48a5ac645bcc
+
+Tip: when you have fixed the problem you can continue the execution adding the option `-resume` to the run command line
+nov-11 12:18:57.667 [TaskFinalizer-1] DEBUG nextflow.Session - Session aborted -- Cause: Process `REPLICA_CONSENSUS` terminated with an error exit status (1)
+nov-11 12:18:57.678 [TaskFinalizer-1] DEBUG nextflow.Session - The following nodes are still active:
+[process] TCOARSE_ENERGIES
+  status=ACTIVE
+  port 0: (value) bound ; channel: pdbs
+  port 1: (value) OPEN  ; channel: contacts
+  port 2: (value) bound ; channel: potential
+  port 3: (cntrl) -     ; channel: $
+
+[process] MERGE_ENERGIES
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: energies
+  port 1: (value) bound ; channel: archive
+  port 2: (value) bound ; channel: metadata
+  port 3: (cntrl) -     ; channel: $
+
+[process] PREDICT_STR
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: energies
+  port 1: (value) bound ; channel: model
+  port 2: (cntrl) -     ; channel: $
+
+[process] PREDICT_BI
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: energies
+  port 1: (value) bound ; channel: embeddings
+  port 2: (value) bound ; channel: model
+  port 3: (cntrl) -     ; channel: $
+
+nov-11 12:18:57.681 [TaskFinalizer-1] WARN  n.processor.TaskPollingMonitor - Killing running tasks (1)
+nov-11 12:18:57.696 [TaskFinalizer-1] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=1; ignoredCount=0; cachedCount=4; pendingCount=2; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=1; succeedDuration=0ms; failedDuration=1m 9s; cachedDuration=6m 17s;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=10; peakMemory=0; ]
+nov-11 12:18:57.709 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+nov-11 12:18:57.883 [main] DEBUG nextflow.Session - Session await > all processes finished
+nov-11 12:18:57.883 [main] DEBUG nextflow.Session - Session await > all barriers passed
+nov-11 12:18:57.884 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=0; failedCount=1; ignoredCount=0; cachedCount=4; pendingCount=2; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=1; succeedDuration=0ms; failedDuration=1m 9s; cachedDuration=6m 17s;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=10; peakMemory=0; ]
+nov-11 12:18:57.889 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+nov-11 12:18:57.895 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

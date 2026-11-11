@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 from anarci import anarci
-from Bio.PDB import MMCIFParser, MMCIFIO, PDBIO, is_aa, PDBParser, PPBuilder
+from Bio.PDB import MMCIFParser, MMCIFIO, PDBIO, PDBParser
 from Bio import PDB
 import numpy as np
 import json
@@ -15,6 +15,10 @@ import glob
 from functools import lru_cache
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from tqdm import tqdm
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+from af3_server_adapter import resolve_jobs
+from config import IPSAE_SCRIPT_PATH, PDOCKQ_SCRIPT_PATH, PDOCKQ2_SCRIPT_PATH,DEFAULT_STAGING_DIR
 
 residue_mapping = {
     'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D',
@@ -634,8 +638,8 @@ def has_tcr_peptide_contact(structure, cutoff=10.0):
     return False
 
 
-def calculate_ipsae(cif_file_path, json_conf_path, scripts_dir, verbose=False):
-    command = ["python", os.path.join(scripts_dir, "ipsae.py"), json_conf_path, cif_file_path, "10", "10"]
+def calculate_ipsae(cif_file_path, json_conf_path, IPSAE_SCRIPT_PATH, verbose=False):
+    command = ["python", IPSAE_SCRIPT_PATH, json_conf_path, cif_file_path, "10", "10"]
     print(f"Calculating iPSAE for {cif_file_path}...")
     print_verbose(" ".join(command), verbose)
     result = subprocess.run(command, capture_output=True, text=True)
@@ -676,7 +680,7 @@ def calculate_for_seed(folder_path, cif_file, confidence_file, scripts_dir):
     if ipsae_path is None:
         print(f"iPSAE results not found in {folder_path}. Running calculation...")
         if cif_file and confidence_file:
-            calculate_ipsae(cif_file, confidence_file, scripts_dir=scripts_dir, verbose=False)
+            calculate_ipsae(cif_file, confidence_file, IPSAE_SCRIPT_PATH, verbose=False)
             ipsae_path = get_ipsae_path()
         else:
             print(f"Error: Missing CIF or JSON file in {folder_path}")
@@ -920,20 +924,21 @@ def main():
     parser.add_argument("--fast", action="store_true",help="If set, skips some computationally expensive steps and uses existing metrics if available")
     parser.add_argument("--verbose", action="store_true", help="If set, prints verbose output")
     parser.add_argument("--workers", type=int, default=int(os.environ.get("SLURM_CPUS_PER_TASK", 10)),help="Number of parallel worker PROCESSES, one per TCR folder")
-    parser.add_argument("--seed-workers", type=int, default=4,help="Number of parallel THREADS used to process seeds within a single TCR folder. ")
-    parser.add_argument("--pdockq-script", type=str,default="/gpfs/projects/bsc72/aascunce/programs/TCoaRse-ESMC/nextflow/src/pdockq.py")
-    parser.add_argument("--pdockq2-script", type=str,default="/gpfs/projects/bsc72/aascunce/programs/TCoaRse-ESMC/nextflow/src/pdockq2_pae.py")
-    parser.add_argument("--ipsae-scripts-dir", type=str,default="/gpfs/projects/bsc72/aascunce/programs/TCoaRse-ESMC/nextflow/src")
+    parser.add_argument("--seed-workers", type=int, default=5,help="Number of parallel THREADS used to process seeds within a single TCR folder.")
+    parser.add_argument("--pdockq-script", type=str,default=PDOCKQ_SCRIPT_PATH, help="Path to the pdockq.py script")
+    parser.add_argument("--pdockq2-script", type=str,default=PDOCKQ2_SCRIPT_PATH, help="Path to the pdockq2_pae.py script")
+    parser.add_argument("--ipsae-script", type=str,default=IPSAE_SCRIPT_PATH, help="Path to the ipsae.py script")
+    parser.add_argument("--staging-dir", type=str, default=DEFAULT_STAGING_DIR, help="Where AF Server outputs are converted to the local AF3 layout")
     args = parser.parse_args()
 
-    subfolders = [os.path.join(args.base_path, d) for d in os.listdir(args.base_path)
-                  if d.lower().startswith("tcr") and os.path.isdir(os.path.join(args.base_path, d))]
+    staging = args.staging_dir
+    subfolders = resolve_jobs(args.base_path, staging)
     print(f"Found {len(subfolders)} TCR folders")
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
 
     with ProcessPoolExecutor(max_workers=args.workers) as executor:
         futures = {executor.submit(run_one_folder, folder, args.output, args.threshold, args.fast, args.verbose, 
-                                   args.seed_workers, args.pdockq_script, args.pdockq2_script, args.ipsae_scripts_dir,): folder for folder in subfolders}
+                                   args.seed_workers, args.pdockq_script, args.pdockq2_script, args.ipsae_script,): folder for folder in subfolders}
 
         for future in tqdm(as_completed(futures), total=len(futures), desc="Processing TCR folders"):
             folder = futures[future]

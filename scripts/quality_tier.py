@@ -4,6 +4,10 @@ from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import argparse
 import joblib
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+from config import RF_PATH
 
 def train_rf(train_df, test_df, seed=42, thresholds=None):
     """
@@ -25,8 +29,7 @@ def train_rf(train_df, test_df, seed=42, thresholds=None):
         'global_plddt', 'plddt_cdr1a', 'plddt_cdr2a', 'plddt_cdr3a',
         'plddt_cdr1b', 'plddt_cdr2b', 'plddt_cdr3b',
         'iptm_mean', 'iptm_tcrpmhc', 'pdockq_AB',
-        'avgipde', 'avgipae', 'avgpdockq2', 'iPSAE'
-    ]
+        'avgipde', 'avgipae', 'avgpdockq2', 'iPSAE']
 
     label_col = 'Quality'
 
@@ -147,11 +150,11 @@ def main():
     
     parser.add_argument("--train", type=str, default=None, help="Path to training CSV file (optional)")
     parser.add_argument("--test", type=str, default=None, help="Path to test CSV file (optional)")
-    parser.add_argument("--output", type=str, default="predictions.csv", help="Path to save predictions CSV")
+    parser.add_argument("--output", type=str, default="./results/examples_quality_tiers.csv", help="Path to save predictions CSV")
     parser.add_argument("--thresholds", type=str, default=None,
                         help="Optional per-class probability thresholds as JSON string, e.g. '{\"LQ\":0.4,\"AQ\":0.7,\"MQ\":0.7,\"HQ\":0.8}'")
     parser.add_argument("--save_model", type=str, default="../classifier/rf_model.pkl", help="Path to save trained RF model")
-    parser.add_argument("--model", type=str, default="../classifier/rf_model.pkl", help="Path to pretrained model")
+    parser.add_argument("--model", type=str, default=RF_PATH, help="Path to pretrained model")
     args = parser.parse_args()
 
     # Parse thresholds if provided
@@ -164,8 +167,7 @@ def main():
         'global_plddt', 'plddt_cdr1a', 'plddt_cdr2a', 'plddt_cdr3a',
         'plddt_cdr1b', 'plddt_cdr2b', 'plddt_cdr3b',
         'iptm_mean', 'iptm_tcrpmhc', 'pdockq_AB',
-        'avgipde', 'avgipae', 'avgpdockq2', 'iPSAE'
-    ]
+        'avgipde', 'avgipae', 'avgpdockq2', 'iPSAE']
 
     # CASE 1: Only test provided -> load pretrained model
     if args.train is None and args.test is not None:
